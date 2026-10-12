@@ -1,0 +1,51 @@
+digraph BridgeUML {
+    rankdir=LR;
+    compound=true;
+    node [shape=record, fontsize=10, fontname="Helvetica"];
+    edge [fontsize=9, fontname="Helvetica"];
+
+    subgraph cluster_abstraction {
+        label = "ABSTRACTION hierarchy (what kind of notification)";
+        style = dashed; color = blue; fontcolor = blue;
+
+        Notification [label="{Notification\n(Abstraction, abstract)|# sender : MessageSender\l|+ setSender(MessageSender) : void\l+ send(recipient, message) : void\l# deliver(recipient, title, body) : boolean\l}", style=filled, fillcolor=lightblue];
+
+        Urgent [label="{UrgentNotification\n(Refined Abstraction)|- fallbackSenders : List\<MessageSender\>\l|+ addFallback(MessageSender)\l+ send(recipient, message)\l}"];
+        Encrypted [label="{EncryptedNotification\n(Refined Abstraction)|+ encrypt(text) : String\l+ decrypt(text) : String\l+ send(recipient, message)\l}"];
+        Batch [label="{ScheduledBatchNotification\n(Refined Abstraction)|- recipients : List\<String\>\l|+ sendToAll(message) : BatchSummary\l+ send(recipient, message)\l}"];
+        Marketing [label="{MarketingNotification\n(Refined Abstraction, added later)|+ optOut(recipient)\l+ send(recipient, message)\l}", style=filled, fillcolor=lightyellow];
+
+        Notification -> Urgent [arrowhead=empty];
+        Notification -> Encrypted [arrowhead=empty];
+        Notification -> Batch [arrowhead=empty];
+        Notification -> Marketing [arrowhead=empty];
+    }
+
+    subgraph cluster_implementor {
+        label = "IMPLEMENTOR hierarchy (how it is delivered)";
+        style = dashed; color = darkgreen; fontcolor = darkgreen;
+
+        MessageSender [label="{\<\<interface\>\>\nMessageSender\n(Implementor)|+ sendMessage(recipient, title, body) : boolean\l+ isAvailable() : boolean\l+ getChannelName() : String\l}", style=filled, fillcolor=lightgreen];
+
+        Simulated [label="{SimulatedSender\n(shared skeleton, abstract)|# canDeliver(...) : boolean\l# format(...) : String\l}"];
+
+        Telegram [label="{TelegramMessageSender\n(Concrete Implementor)|formatted message}"];
+        Email [label="{EmailMessageSender\n(Concrete Implementor)|title + signature}"];
+        Sms [label="{SmsMessageSender\n(Concrete Implementor)|max 160 characters}"];
+        Kafka [label="{KafkaEventSender\n(Concrete Implementor)|publishes an event}"];
+        Push [label="{PushNotificationSender\n(Concrete Implementor, added later)|short push card}", style=filled, fillcolor=lightyellow];
+
+        MessageSender -> Simulated [arrowhead=empty, style=dashed];
+        Simulated -> Telegram [arrowhead=empty];
+        Simulated -> Email [arrowhead=empty];
+        Simulated -> Sms [arrowhead=empty];
+        Simulated -> Kafka [arrowhead=empty];
+        Simulated -> Push [arrowhead=empty];
+    }
+
+    Notification -> MessageSender [label="  THE BRIDGE\n  has-a (sender)", arrowhead=odiamond, color=red, fontcolor=red, penwidth=3];
+
+    Main [label="{Main\n(Client)|+ main(args)\l}"];
+    Main -> Notification [label="uses", style=dotted];
+    Main -> MessageSender [label="creates & passes in", style=dotted];
+}
