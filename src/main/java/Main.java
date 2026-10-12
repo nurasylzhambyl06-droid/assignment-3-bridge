@@ -9,6 +9,7 @@ public class Main {
         batchWithSms();
         runtimeSwitchingTelegramToEmail();
         telegramUnavailableFallbackToSms();
+        marketingWithPush();
         bonusEncryptedWithKafka();
     }
 
@@ -66,6 +67,15 @@ public class Main {
         notification.send("+77000000001", "Database is unreachable");
 
         show("5. Telegram unavailable -> fallback to SMS", notification, telegram, sms);
+    }
+
+    private static void marketingWithPush() {
+        PushNotificationSender push = new PushNotificationSender();
+        Notification notification = new MarketingNotification(push);
+
+        notification.send("nurasyl", "Autumn sale: -20% on everything");
+
+        show("6. MarketingNotification + PushNotificationSender", notification, push);
     }
 
     private static void bonusEncryptedWithKafka() {
